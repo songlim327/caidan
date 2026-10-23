@@ -1,7 +1,0 @@
-applications:
-  test-app:
-    name: Sample Test App
-    executable: C:\test\sample.exe
-  test-app2:
-    name: Sample Test App 2
-    executable: C:\test\sample2.exe

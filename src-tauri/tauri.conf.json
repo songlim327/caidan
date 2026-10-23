@@ -29,7 +29,7 @@
     "active": true,
     "targets": "all",
     "resources": {
-      "resources/config.yaml": "config.yaml"
+      "resources/config.yaml.sample": "config.yaml.sample"
     },
     "icon": [
       "icons/icon.ico"

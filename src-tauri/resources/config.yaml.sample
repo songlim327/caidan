@@ -1,0 +1,9 @@
+# Sample configuration for applications
+# rename config.yaml.sample to config.yaml
+applications:
+  testapp1:
+    name: Sample Test App 1
+    executable: C:\test\sample.exe
+  testapp2:
+    name: Sample Test App 2
+    executable: C:\Program Files\Google\Chrome\Application\chrome.exe https://www.google.com
