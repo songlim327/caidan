@@ -1,5 +1,9 @@
 # Caidan
 
+<p align="center">
+  <img src="src-tauri/icons/icon.ico" alt="Caidan icon" width="128" height="128" />
+</p>
+
 Caidan is a Windows desktop app launcher built with Tauri, React, and Rust. It reads a YAML configuration file, displays each application as a selectable card with its icon, and opens the target app or shortcut when clicked.
 
 This project is designed to make a small internal app-menu or launcher easy to maintain without hardcoding UI elements or app paths in the frontend.
