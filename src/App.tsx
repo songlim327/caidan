@@ -33,6 +33,7 @@ function App() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 justify-items-center gap-12">
         {appRecords.map((record: record) => (
           <div
+            key={record.id}
             className="flex flex-col items-center justify-center p-4 pt-6 gap-4 cursor-pointer w-42 lg:w-48 rounded-md transition-colors duration-150 hover:bg-neutral-800"
             onClick={() => click(record.executable)}
             title={record.name}
