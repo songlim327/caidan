@@ -60,10 +60,12 @@ fn read_config(app: tauri::AppHandle) -> Result<Vec<ApplicationRecord>, String> 
         .resolve("config.yaml", BaseDirectory::Resource)
         .map_err(|e| format!("Failed to resolve bundled config path: {e}"))?;
 
-    let config_content: String = std::fs::read_to_string(&config_path)
-        .map_err(|e| format!("Failed to read config file at {}: {e}", config_path.display()))?;
-
-    println!("Config content:\n{}", config_content);
+    let config_content: String = std::fs::read_to_string(&config_path).map_err(|e| {
+        format!(
+            "Failed to read config file at {}: {e}",
+            config_path.display()
+        )
+    })?;
 
     let root: ConfigRoot =
         serde_yaml::from_str(&config_content).map_err(|e| format!("Failed to parse YAML: {e}"))?;
@@ -100,7 +102,8 @@ fn cache_icon(path: &str) -> Result<PathBuf, Box<dyn Error>> {
 
     if let Some(app_path) = app_path {
         let logo_hash = hash_path(app_path.as_path());
-        let icon = get_icon_by_path_with_size(app_path, IconSize::ExtraLarge).map_err(|e| e.to_string())?;
+        let icon = get_icon_by_path_with_size(app_path, IconSize::ExtraLarge)
+            .map_err(|e| e.to_string())?;
 
         let icon_path = images_dir.join(format!("{logo_hash}.png"));
         icon.save(&icon_path)
@@ -126,8 +129,7 @@ fn extract_app_path(path: &str) -> Option<PathBuf> {
         .filter_map(|ext| lower.find(ext).map(|i| i + ext.len()))
         .min()?;
 
-    let parse_input = if !striped.starts_with('"')
-    {
+    let parse_input = if !striped.starts_with('"') {
         let striped = &striped[..end];
         format!("\"{striped}\"")
     } else {
@@ -135,7 +137,6 @@ fn extract_app_path(path: &str) -> Option<PathBuf> {
     };
 
     let wide_path: Vec<u16> = parse_input.encode_utf16().chain(Some(0)).collect();
-    // let wide_path: Vec<u16> = path.encode_utf16().chain(Some(0)).collect();
     let mut argc = 0;
 
     let argv = unsafe { CommandLineToArgvW(PCWSTR(wide_path.as_ptr()), &mut argc) };
@@ -185,7 +186,24 @@ fn hash_path(path: &Path) -> String {
 }
 
 // Opens the specified application using the default system handler.
+// Supported form: "C:\\path\\to\\app.exe https://example.com"
 #[tauri::command]
 fn open_app(path: &Path) {
+    let path_str = path.to_string_lossy();
+
+    if let Some(url_start) = path_str
+        .find("http://")
+        .or_else(|| path_str.find("https://"))
+    {
+        let executable = path_str[..url_start].trim();
+        let url = &path_str[url_start..].trim();
+
+        if !executable.is_empty() && !url.is_empty() {
+            let _ = open::with(url, executable)
+                .map_err(|e| format!("Failed to open '{executable}' with '{url}': {e}"));
+            return;
+        }
+    }
+
     let _ = open::that(path).map_err(|e| format!("Failed to open executable: {e}"));
 }
