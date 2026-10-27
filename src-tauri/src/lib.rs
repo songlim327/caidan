@@ -6,6 +6,7 @@ use std::{
     ffi::OsString,
     fs,
     path::{Path, PathBuf},
+    process::Command,
 };
 use tauri::{path::BaseDirectory, Manager};
 use windows::core::PCWSTR;
@@ -186,24 +187,19 @@ fn hash_path(path: &Path) -> String {
 }
 
 // Opens the specified application using the default system handler.
-// Supported form: "C:\\path\\to\\app.exe https://example.com"
 #[tauri::command]
 fn open_app(path: &Path) {
     let path_str = path.to_string_lossy();
 
-    if let Some(url_start) = path_str
-        .find("http://")
-        .or_else(|| path_str.find("https://"))
-    {
-        let executable = path_str[..url_start].trim();
-        let url = &path_str[url_start..].trim();
-
-        if !executable.is_empty() && !url.is_empty() {
-            let _ = open::with(url, executable)
-                .map_err(|e| format!("Failed to open '{executable}' with '{url}': {e}"));
-            return;
-        }
+    if path_str.contains("http://") || path_str.contains("https://") {
+        let exe_pos = path_str.find("exe");
+        let exe_pos = exe_pos.unwrap_or(path_str.len()) + 3;
+        let executable = &path_str[..exe_pos].trim();
+        let args: Vec<&str> = path_str[exe_pos..].trim().split(" ").collect();
+        let _ = Command::new(executable)
+            .args(&args)
+            .spawn()
+            .map_err(|e| format!("Failed to open executable with args: {}: {e}", path_str));
     }
-
     let _ = open::that(path).map_err(|e| format!("Failed to open executable: {e}"));
 }
