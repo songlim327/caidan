@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { Loader } from "lucide-react";
 import "./App.css";
 
 interface record {
@@ -11,14 +12,17 @@ interface record {
 
 function App() {
   const [appRecords, setAppRecords] = useState<record[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // probably include a loading animation for load config
+    setLoading(true);
     invoke<record[]>("read_config")
       .then(setAppRecords)
       .catch((error) => {
         console.error(error);
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // handle click event for app records
@@ -30,6 +34,11 @@ function App() {
 
   return (
     <main id="container" className="box-border p-6 rounded-lg min-h-full w-full min-w-0">
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Loader className="animate-spin" />
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 justify-items-center gap-12">
         {appRecords.map((record: record) => (
           <div
