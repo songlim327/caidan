@@ -27,17 +27,18 @@ This project is designed to make a small internal app-menu or launcher easy to m
 
 ```text
 caidan/
-├── config.yaml              # App definitions used by the launcher
-├── index.html               # Vite entry
-├── package.json             # Frontend scripts and dependencies
-├── src/                     # React app UI
-├── src-tauri/               # Tauri + Rust backend
+├── index.html                 # Vite entry
+├── package.json               # Frontend scripts and dependencies
+├── src/                       # React app UI
+├── src-tauri/                 # Tauri + Rust backend
 │   ├── src/
 │   ├── Cargo.toml
-│   └── tauri.conf.json
+│   ├── tauri.conf.json
+│   └── resources
+│       └── config.yaml.sample # sample config
 ├── public/
 ├── README.md
-└── dist/                    # Build output from the frontend
+└── dist/                      # Build output from the frontend
 ```
 
 ## Prerequisites

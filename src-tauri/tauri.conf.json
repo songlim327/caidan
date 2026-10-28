@@ -33,6 +33,16 @@
     },
     "icon": [
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "wix": {
+        "fragmentPaths": [
+          "windows/fragments/images-dir.wxs"
+        ],
+        "componentRefs": [
+          "ImagesFolderComponent"
+        ]
+      }
+    }
   }
 }

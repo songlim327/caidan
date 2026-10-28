@@ -26,6 +26,7 @@ struct ApplicationRecord {
 struct ApplicationEntry {
     name: String,
     executable: String,
+    logo: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -37,15 +38,26 @@ struct ConfigRoot {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let exe_path = std::env::current_exe()?;
-            let images_dir = exe_path
+            let images_dir = app
+                .path()
+                .app_local_data_dir()
+                .map_err(|e| format!("Failed to resolve local app data directory: {e}"))?
+                .join("images");
+
+            fs::create_dir_all(&images_dir)
+                .map_err(|e| format!("Failed to create images directory: {e}"))?;
+
+            let custom_images_dir = std::env::current_exe()?
                 .parent()
                 .ok_or_else(|| format!("Failed to determine application directory"))?
                 .to_path_buf()
                 .join("images");
-            Ok(app
-                .asset_protocol_scope()
-                .allow_directory(images_dir, true)?)
+
+            let scope = app.asset_protocol_scope();
+            scope.allow_directory(images_dir, true)?;
+            scope.allow_directory(custom_images_dir, true)?;
+
+            Ok(())
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![read_config, open_app])
@@ -78,22 +90,22 @@ fn read_config(app: tauri::AppHandle) -> Result<Vec<ApplicationRecord>, String> 
             id,
             name: entry.name,
             executable: entry.executable.clone(),
-            logo: cache_icon(&entry.executable)
-                .ok()
-                .map(|p| p.to_string_lossy().to_string()),
+            logo: entry.logo.or_else(|| {
+                cache_icon(&app, &entry.executable)
+                    .ok()
+                    .map(|p| p.to_string_lossy().to_string())
+            }),
         })
         .collect::<Vec<_>>();
     Ok(apps)
 }
 
 #[cfg(windows)]
-fn cache_icon(path: &str) -> Result<PathBuf, Box<dyn Error>> {
-    let exe_path = std::env::current_exe()?;
-
-    let images_dir = exe_path
-        .parent()
-        .ok_or_else(|| format!("Failed to determine application directory"))?
-        .to_path_buf()
+fn cache_icon(app: &tauri::AppHandle, path: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let images_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Failed to resolve local app data directory: {e}"))?
         .join("images");
     fs::create_dir_all(&images_dir)
         .map_err(|e| format!("Failed to create images directory: {e}"))?;

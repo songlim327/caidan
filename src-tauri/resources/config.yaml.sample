@@ -1,9 +1,11 @@
 # Sample configuration for applications
 # rename config.yaml.sample to config.yaml
+# logo is optional, fallback to executable logo if not exist
 applications:
   testapp1:
     name: Sample Test App 1
     executable: C:\test\sample.exe
+    logo: C:\test\sample.png
   testapp2:
     name: Sample Test App 2
     executable: C:\Program Files\Google\Chrome\Application\chrome.exe https://www.google.com
